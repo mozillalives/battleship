@@ -1,0 +1,16 @@
+test setting each ship properly
+test setting each ship improperly (selecting a space not far enough out, but just enough)
+test setting each ship invalidly (starting one place then choosing a spot too far out)
+test setting a ship on another player's board (should fail)
+test setting a ship outside the bounds of the board (should fail)
+
+test trying to play without all boards setup (should fail)
+
+test firing into the water
+test firing into a ship
+test sinking a ship
+test firing into the same spot as before (should fail)
+test firing off the board (should fail)
+test firing when it's not your turn (should fail)
+
+test invitation acceptance 
