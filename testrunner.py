@@ -2,7 +2,7 @@
 import optparse
 import sys
 try:
-    import unittest2
+    import unittest as unittest2
 except ImportError:
     print "You're missing the unittest2 module"
     print "on a linux system, this should be just"

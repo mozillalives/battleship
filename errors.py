@@ -1,6 +1,9 @@
 
 class Error(Exception):
     pass
+    
+class NotSetupYet(Error):
+    pass
 
 class InvalidSpace(Error):
     pass
