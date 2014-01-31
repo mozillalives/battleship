@@ -1,10 +1,14 @@
 
-from helpers import default_gameboard
-# from errors import *
 from google.appengine.ext import ndb
 
+from helpers import default_gameboard
+# from errors import *
 
-class Board(ndb.Model):
+# I know, I know - this isn't ruby
+from mixins import BoardMixin, GameMixin
+
+
+class Board(ndb.Model, BoardMixin):
     player = ndb.UserProperty()
     spaces = ndb.StringProperty(default=default_gameboard(10, 10))
     columns = ndb.IntegerProperty(default=10)
@@ -12,14 +16,26 @@ class Board(ndb.Model):
     last_play = ndb.StringProperty()
 
 
-class Game(ndb.Model):
-    board1 = ndb.KeyProperty(kind=Board)
-    board2 = ndb.KeyProperty(kind=Board)
+class Game(ndb.Model, GameMixin):
+    board1_key = ndb.KeyProperty(kind=Board)
+    board2_key = ndb.KeyProperty(kind=Board)
     turns = ndb.IntegerProperty()
     created_at = ndb.DateTimeProperty(auto_now_add=True)
     updated_at = ndb.DateTimeProperty()
     ended_at = ndb.DateTimeProperty()
     winner = ndb.UserProperty()
+    
+    @property
+    def board1(self):
+        if self.board1_key is None:
+            return None
+        return ndb.Key(Board, self.board1_key).get()
+
+    @property
+    def board2(self):
+        if self.board2_key is None:
+            return None
+        return ndb.Key(Board, self.board2_key).get()
 
 # class Game(db.Model):
 #     player1 = db.UserProperty()

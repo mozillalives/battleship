@@ -4,8 +4,9 @@ import errors
 import helpers
 import models
 
-from google.appengine.api import memcache, users
-from google.appengine.ext import db, testbed
+# from google.appengine.api import memcache, users
+# from google.appengine.ext import ndb, testbed
+from google.appengine.ext import testbed
 
 
 # http://melp.nl/2011/02/enhancing-python-unit-tests-with-more-decorators/
@@ -16,6 +17,20 @@ def expect_exception(exception):
             self.assertRaises(exception, fn, self, *args, **kwargs)
         return test_decorated
     return test_decorator
+    
+class DBTestCase(unittest.TestCase):
+    def setUp(self):
+        # First, create an instance of the Testbed class.
+        self.testbed = testbed.Testbed()
+        # Then activate the testbed, which prepares the service stubs for use.
+        self.testbed.activate()
+        # Next, declare which service stubs you want to use.
+        self.testbed.init_datastore_v3_stub()
+        #self.testbed.init_memcache_stub()
+        self.testbed.init_user_stub()
+    
+    def tearDown(self):
+        self.testbed.deactivate()
 
 # class HelperTestCase(unittest.TestCase):
 #     
@@ -50,55 +65,40 @@ def expect_exception(exception):
 #         new_spaces = helpers.replace_chars([17, 18, 19, 20], 'f', old_spaces)
 #         self.assertEqual(spaces, new_spaces)
 
-class GameSetupTestCase(unittest.TestCase):
-    pass
+class GameSetupTestCase(DBTestCase):
+
+    def setUp(self):
+        super(GameSetupTestCase, self).setUp()
+        self.game = models.Game()
+        self.game.put()
+
+    def test_adding_one_player(self):
+        """test adding a single player to the game"""
+        self.game.add_player(users.User('mozillalives@gmail.com'))
+
+    def test_adding_two_players(self):
+        """test adding two players to the game"""
+        self.game.add_player(users.User('mozillalives@gmail.com'))
+        self.game.add_player(users.User('mozillalives@gmail.com'))
+
+    @expect_exception(errors.TooManyPlayers)
+    def test_adding_three_players(self):
+        """test adding three players to the game"""
+        self.game.add_player(users.User('mozillalives@gmail.com'))
+        self.game.add_player(users.User('mozillalives@gmail.com'))
+        self.game.add_player(users.User('mozillalives@gmail.com'))
+
+    @expect_exception(errors.NotSetupYet)
+    def test_adding_one_player(self):
+        """test playing when there is only a single player registered"""
+        self.game.add_player(users.User('mozillalives@gmail.com'))
+
     # test adding one player (pass)
     # test adding two players (pass)
     # test adding three players (fail)
     # test adding one player and setting up board (pass)
     # test adding one player, setting up board, playing (fail)
     # test adding one player and playing (fail)
-    
-# class GameSetupTestCase(unittest.TestCase):
-#     
-#     def setUp(self):
-#         # First, create an instance of the Testbed class.
-#         self.testbed = testbed.Testbed()
-#         # Then activate the testbed, which prepares the service stubs for use.
-#         self.testbed.activate()
-#         # Next, declare which service stubs you want to use.
-#         self.testbed.init_datastore_v3_stub()
-#         #self.testbed.init_memcache_stub()
-#         self.testbed.init_user_stub()
-# 
-#         self.game = models.Game()
-#         self.game.put()
-# 
-#     def tearDown(self):
-#         self.game.delete()
-#         self.testbed.deactivate()
-# 
-#     def test_adding_one_player(self):
-#         """test adding a single player to the game"""
-#         self.game.add_player(users.User('mozillalives@gmail.com'))
-# 
-#     def test_adding_two_players(self):
-#         """test adding two players to the game"""
-#         self.game.add_player(users.User('mozillalives@gmail.com'))
-#         self.game.add_player(users.User('mozillalives@gmail.com'))
-# 
-#     @expect_exception(errors.TooManyPlayers)
-#     def test_adding_three_players(self):
-#         """test adding three players to the game"""
-#         self.game.add_player(users.User('mozillalives@gmail.com'))
-#         self.game.add_player(users.User('mozillalives@gmail.com'))
-#         self.game.add_player(users.User('mozillalives@gmail.com'))
-# 
-#     @expect_exception(errors.NotSetupYet)
-#     def test_adding_one_player(self):
-#         """test playing when there is only a single player registered"""
-#         self.game.add_player(users.User('mozillalives@gmail.com'))
-# 
 
 class AssembleBoardTestCase(unittest.TestCase):
     pass
